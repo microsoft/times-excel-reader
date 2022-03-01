@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  tims-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,11 +19,15 @@ jobs:
       
       - uses: actions/checkout@v2
         with:
-          name: samwebster/times-ireland-model
+          repository: samwebster/times-ireland-model
           
       - uses: actions/checkout@v2
         with:
-          name: MaREI-EPMG/times-ireland-model_gams
+          repository: MaREI-EPMG/times-ireland-model_gams
+          
+      - run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           
       - run: |
           python utils/dd_to_csv.py ../times-ireland-model_gams/model ground_truth
