@@ -35,9 +35,12 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           
-      - name: Run tests
+      - name: Convert ground truth DD to CSV
         working-directory: times-excel-reader
         run: |
-          ls -R ..
           python utils/dd_to_csv.py ../times-ireland-model_gams/model ground_truth
+          
+      - name: Run tool and check output
+        working-directory: times-excel-reader
+        run: |
           python times_excel_reader.py
