@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - uses: actions/checkout@v2
+        with:
+          name: samwebster/times-ireland-model
+          
+      - uses: actions/checkout@v2
+        with:
+          name: MaREI-EPMG/times-ireland-model_gams
+          
+      - run: |
+          python utils/dd_to_csv.py ../times-ireland-model_gams/model ground_truth
