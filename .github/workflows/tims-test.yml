@@ -13,22 +13,21 @@ on:
 jobs:
   tims-test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: work
     
     steps:
       - uses: actions/checkout@v2
+        with:
+          path: times-excel-reader
       
       - uses: actions/checkout@v2
         with:
           repository: samwebster/times-ireland-model
-          path: ../times-ireland-model
+          path: times-ireland-model
           
       - uses: actions/checkout@v2
         with:
           repository: MaREI-EPMG/times-ireland-model_gams
-          path: ../times-ireland-model_gams
+          path: times-ireland-model_gams
           
       - run: |
           python -m pip install --upgrade pip
