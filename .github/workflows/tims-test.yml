@@ -29,8 +29,7 @@ jobs:
       - run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          echo Done
           
       - run: |
-          ls -R
+          ls -R ..
           python utils/dd_to_csv.py ../times-ireland-model_gams/model ground_truth
