@@ -29,12 +29,15 @@ jobs:
           repository: MaREI-EPMG/times-ireland-model_gams
           path: times-ireland-model_gams
           
-      - working-directory: times-excel-reader
+      - name: Install packages
+        working-directory: times-excel-reader
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           
-      - working-directory: times-excel-reader
+      - name: Run tests
+        working-directory: times-excel-reader
         run: |
           ls -R ..
           python utils/dd_to_csv.py ../times-ireland-model_gams/model ground_truth
+          python times_excel_reader.py
