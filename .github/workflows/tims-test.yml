@@ -13,6 +13,9 @@ on:
 jobs:
   tims-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: work
     
     steps:
       - uses: actions/checkout@v2
