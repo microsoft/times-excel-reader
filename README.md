@@ -4,7 +4,20 @@
 
 This project is an open source tool to convert TIMES model Excel input files to DD format ready for processing by GAMS.  The intention is to make it easier for people to reproduce research results on TIMES models.
 
-TIMES is an energy systems model generator from the International Energy Agency that is used around the world to inform energy policy - https://iea-etsap.org/index.php/etsap-tools/model-generators/times
+The project began as a [Hackathon](https://news.microsoft.com/life/hackathon/) project hence the repo being in the Microsoft organisation, however Microsoft are not funding this work. Further work has been done as part of company Hackathons and the rest in people's own time (both Microsoft employees and not).
+
+TIMES is an energy systems model generator from the International Energy Agency that is used around the world to inform energy policy - https://iea-etsap.org/index.php/etsap-tools/model-generators/times. Detailed documentation is available at https://iea-etsap.org/index.php/documentation
+
+## Overview
+
+The input data is in multiple Excel files and spread across multiple worksheets. Each worksheet can contain any number of data 'tables'. These are annotated by a cell directly above with a tilde and the name of the table e.g. ~FI_T (flexible import table).
+
+Steps:
+- Load the input Excel files
+- Locate and extracts all of the 'tables' into Python objects which include the data in a Pandas DataFrame
+- Process these tables through a sequence of transforms. These transforms perform a variety of operations from data cleaning to complex operations specific to a single type of table.
+- Using the mappings provided in times_mappings.txt, convert the transformed tables into tables ready for the GAMS model to process albeit not yet in DD format. Usually this is a straightforward mapping of table and column names, however it can also select a subset of rows for some tables.
+- Write the mapped tables to DD file *(not yet implemented)*
 
 ## Contributing
 
