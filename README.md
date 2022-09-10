@@ -12,7 +12,7 @@ TIMES is an energy systems model generator from the International Energy Agency 
 
 The input data is in multiple Excel files and spread across multiple worksheets. Each worksheet can contain any number of data 'tables'. These are annotated by a cell directly above with a tilde and the name of the table e.g. ~FI_T (flexible import table).
 
-Steps:
+Steps performed by this tool:
 - Load the input Excel files
 - Locate and extract all of the 'tables' into Python objects which include the data as Pandas DataFrames
 - Process these tables through a sequence of transforms. These transforms perform a variety of operations from data cleaning to complex operations specific to a single type of table.
