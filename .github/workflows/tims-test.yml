@@ -26,6 +26,7 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Check code formatting
+        working-directory: times-excel-reader
         run: |
           pre-commit install
           pre-commit run --all-files
