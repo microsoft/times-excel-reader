@@ -26,7 +26,9 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Check code formatting
-        run: pre-commit run --all-files
+        run: |
+          pre-commit install
+          pre-commit run --all-files
 
       - uses: actions/checkout@v2
         with:
