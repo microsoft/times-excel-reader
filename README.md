@@ -4,7 +4,7 @@
 
 This project is an open source tool to convert TIMES model Excel input files to DD format ready for processing by GAMS.  The intention is to make it easier for people to reproduce research results on TIMES models.
 
-The project began as a [Hackathon](https://news.microsoft.com/life/hackathon/) project hence the repo being in the Microsoft organisation, however Microsoft are not funding this work. Further work has been done as part of company Hackathons and the rest in people's own time (both Microsoft employees and not).
+The project began as a [Hackathon](https://news.microsoft.com/life/hackathon/) project. Further work has been done as part of company Hackathons and the rest in people's own time (both Microsoft employees and not).
 
 TIMES is an energy systems model generator from the International Energy Agency that is used around the world to inform energy policy - https://iea-etsap.org/index.php/etsap-tools/model-generators/times. Detailed documentation is available at https://iea-etsap.org/index.php/documentation
 
