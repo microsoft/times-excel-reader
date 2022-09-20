@@ -578,8 +578,8 @@ def read_mappings(filename: str) -> List[TimesXlMap]:
             times_cols = times_cols_str.split(",")
             xl_cols = xl_cols_str.split(",")
             filter_rows = False
-            if xl_cols[-1].startswith("filter_rows:"):
-                xl_cols[-1] = xl_cols[-1].replace("filter_rows:", "")
+            if xl_cols[-1].startswith("Attribute:"):
+                xl_cols[-1] = xl_cols[-1].replace("Attribute:", "")
                 filter_rows = True
             col_map = {}
             for index, value in enumerate(xl_cols):
