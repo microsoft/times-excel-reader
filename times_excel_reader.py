@@ -347,9 +347,9 @@ def compare(data: Dict[str, DataFrame], ground_truth: Dict[str, DataFrame]):
 def remove_comment_rows(table: EmbeddedXlTable) -> EmbeddedXlTable:
     """
     Return a modified copy of 'table' where rows with cells containig '*'
-    or '\I:' in their first of third columns have been deleted. These characters
+    or '\I:' in their first or third columns have been deleted. These characters
     are defined in https://iea-etsap.org/docs/Documentation_for_the_TIMES_Model-Part-IV.pdf
-    as comment identifiers.
+    as comment identifiers (pag 15).
     TODO: is this description correct?
 
     :param table:       Table object in EmbeddedXlTable format.
@@ -1707,16 +1707,19 @@ def expand_rows_parallel(tables: List[EmbeddedXlTable]) -> List[EmbeddedXlTable]
 
 def apply_composite_tag(table: EmbeddedXlTable) -> EmbeddedXlTable:
     """
-    If the table tag is composite (contains ':', e.g. ~FI_T: COM_PKRSV)
-    fill in the 'Atribute' field in the dataframe with the tag value
-    (e.g. COM_PKRSV ) and return a modified version of the table with a
-    simplified table tag (e.g. ~FI_T)
-    If the table tag is not composite, return the unmodified table.
-    TODO: don't really understand why we are doing this.
+    Handles table level declarations. Declarations can be included in the table
+    tag and will apply to all data that doesn't have a different value for that
+    index specified. For example, ~FI_T: DEMAND would assign DEMAND as the
+    attribute for all values in the table that don’t have an attribute specification
+    at the column or row level. After applying the declaration this function will
+    return the modified table with the simplified table tag (e.g. ~FI_T).
+
+    See page 15 of https://iea-etsap.org/docs/Documentation_for_the_TIMES_Model-Part-IV.pdf
+    for more context.
 
     :param table:      Table in EmbeddedXlTable format.
-    :return:           Table in EmbeddedXlTable format with a simple table
-                       tag.
+    :return:           Table in EmbeddedXlTable format with declarations applied
+                       and table tag simplified.
     """
     if ":" in table.tag:
         (newtag, varname) = table.tag.split(":")
@@ -1730,14 +1733,13 @@ def apply_composite_tag(table: EmbeddedXlTable) -> EmbeddedXlTable:
 
 def explode(df, data_columns):
     """
-    Explode the given 'data_columns' columns in dataframe df, filling in the
-    exploded values in a 'VALUE' column.
-    TODO: is this correct?
+    Transpose the 'data_columns' in each row into a column of values, replicating the other
+    columns. The name for the new column is "VALUE".
 
     :param df:              Dataframe to be exploded.
     :param data_columns:    Names of the columns to be exploded.
-    :return:                Tuple with the exploded dataframe and a list of exploded
-                            column names.
+    :return:                Tuple with the exploded dataframe and a Series of the original
+                            column name for each value in each new row.
     """
     data = df[data_columns].values.tolist()
     other_columns = [
