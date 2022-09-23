@@ -17,9 +17,9 @@ from functools import reduce
 from pathlib import Path
 import pickle
 
-#============================================================================
-#===============                   CLASSES                   ================
-#============================================================================
+# ============================================================================
+# ===============                   CLASSES                   ================
+# ============================================================================
 
 
 @dataclass
@@ -77,6 +77,7 @@ class Tag(str, Enum):
     You can see a list of all the possible tags in section 2.4 of
     https://iea-etsap.org/docs/Documentation_for_the_TIMES_Model-Part-IV.pdf
     """
+
     active_p_def = "~ACTIVEPDEF"
     book_regions_map = "~BOOKREGIONS_MAP"
     comemi = "~COMEMI"
@@ -107,17 +108,18 @@ class Tag(str, Enum):
         return tag in cls._value2member_map_
 
 
-#============================================================================
-#===============             TOP-LEVEL FUNCTIONS             ================
-#============================================================================
+# ============================================================================
+# ===============             TOP-LEVEL FUNCTIONS             ================
+# ============================================================================
+
 
 def read_mappings(filename: str) -> List[TimesXlMap]:
     """
     Function to load mappings from a text file between the excel sheets we use as input and
     the tables we give as output. The mappings have the following structure:
-    
+
     OUTPUT_TABLE[DATAYEAR,VALUE] = ~TimePeriods(Year,B)
-    
+
     where OUTPUT_TABLE is the name of the table we output and it includes a list of the
     different fields or column names it includes. On the other side, TimePeriods is the type
     of table that we will use as input to produce that table, and it also includes a list of
@@ -126,7 +128,7 @@ def read_mappings(filename: str) -> List[TimesXlMap]:
     The mappings are loaded into TimesXlMap objects. See the description of that class for more
     information of the different fields they contain.
 
-    :param filename:        Name of the text file containing the mappings. 
+    :param filename:        Name of the text file containing the mappings.
     :return:                List of mappings in TimesXlMap format.
     """
     mappings = []
@@ -330,6 +332,7 @@ def compare(data: Dict[str, DataFrame], ground_truth: Dict[str, DataFrame]):
 ################             TRANSFORM FUNCTIONS             ################
 #############################################################################
 
+
 def remove_comment_rows(table: EmbeddedXlTable) -> EmbeddedXlTable:
     """
     Return a modified copy of 'table' where rows with cells containig '*'
@@ -405,6 +408,7 @@ def remove_tables_with_formulas(tables: List[EmbeddedXlTable]) -> List[EmbeddedX
     :param tables:      List of tables in EmbeddedXlTable format.
     :return:            List of tables in EmbeddedXlTable format without any formulas.
     """
+
     def is_formula(s):
         return isinstance(s, str) and len(s) > 0 and s[0] == "="
 
@@ -426,7 +430,7 @@ def normalize_tags_columns_attrs(
 
     :param tables:      List of tables in EmbeddedXlTable format.
     :return:            List of tables in EmbeddedXlTable format with normalzed values.
-    """    
+    """
     # TODO Uppercase column names and attribute values in mapping.txt when reading it
     # TODO Check all string literals left in file
     def normalize(table: EmbeddedXlTable) -> EmbeddedXlTable:
@@ -1679,9 +1683,10 @@ def expand_rows_parallel(tables: List[EmbeddedXlTable]) -> List[EmbeddedXlTable]
         return list(executor.map(expand_rows, tables))
 
 
-#============================================================================
-#===============           HELPER FUNCTIONS                 =================
-#============================================================================
+# ============================================================================
+# ===============           HELPER FUNCTIONS                 =================
+# ============================================================================
+
 
 def apply_composite_tag(table: EmbeddedXlTable) -> EmbeddedXlTable:
     """
@@ -2052,7 +2057,7 @@ def are_cells_all_empty(df, row: int, start_col: int, end_col: int) -> bool:
     :param start_col:       Initial column of the dataframe to be evaluated.
     :param end_col:         Final column of the dataframe to be evaluated.
     :return:                Boolean indicating if all the cells are empty.
-    """    
+    """
     for col in range(start_col, end_col):
         if not cell_is_empty(df.iloc[row, col]):
             return False
