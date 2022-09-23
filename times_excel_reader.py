@@ -1060,7 +1060,7 @@ def process_years(tables: Dict[str, DataFrame]) -> Dict[str, DataFrame]:
 
     # Modelyears is the union of pastyears and the representative years of the model (middleyears)
     modelyears = (
-        pastyears.combine_first(tables[Tag.time_periods]["M"])
+        pastyears.append(tables[Tag.time_periods]["M"], ignore_index=True)
         .drop_duplicates()
         .sort_values()
     )
