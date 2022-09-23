@@ -21,6 +21,7 @@ import pickle
 ################                   CLASSES                   ################
 #############################################################################
 
+
 @dataclass
 class EmbeddedXlTable:
     """This class defines a table object as a pandas dataframe wrapped with some metadata.
