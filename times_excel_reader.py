@@ -1462,6 +1462,8 @@ def process_wildcards(tables: Dict[str, DataFrame]) -> Dict[str, DataFrame]:
                             raise ValueError("~FI_T table has duplicated indices")
                     # so that we can update the original table, copy original index back that was lost when merging
                     df = df.set_index("index")
+                    # for speed, extract just the VALUE column as that is the only one being updated
+                    df = df[["VALUE"]]
                     if debug:
                         if any(df.index.duplicated()):
                             raise ValueError("~FI_T table has duplicated indices")
@@ -1476,8 +1478,6 @@ def process_wildcards(tables: Dict[str, DataFrame]) -> Dict[str, DataFrame]:
                         df["VALUE"] = [row.VALUE] * len(df)
                     if len(df) == 0:
                         print(f"WARNING: {tag} row matched nothing")
-                    # for speed, extract just the VALUE column as that is the only one being updated
-                    df = df[["VALUE"]]
                     tables[Tag.fi_t].update(df)
                 else:
                     # Construct 1-row data frame for data
