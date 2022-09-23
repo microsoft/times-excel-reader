@@ -108,9 +108,21 @@ class Tag(str, Enum):
         return tag in cls._value2member_map_
 
 
+
 # ============================================================================
 # ===============             TOP-LEVEL FUNCTIONS             ================
 # ============================================================================
+
+query_columns = {
+    "PSet_Set",
+    "PSet_PN",
+    "PSet_PD",
+    "PSet_CI",
+    "PSet_CO",
+    "CSet_Set",
+    "CSet_CN",
+    "CSet_CD",
+}
 
 
 def read_mappings(filename: str) -> List[TimesXlMap]:
@@ -541,8 +553,8 @@ def process_flexible_import_tables(
             and ("Comm-OUT" in df.columns)
             and (table.tag != Tag.tfm_upd)
         ):
-            kwargs = {"TOP-IN": ["IN"] * nrows, "TOP-OUT": ["OUT"] * nrows}
-            df = df.assign(**kwargs)
+            df["TOP-IN"] = ["IN"] * nrows
+            df["TOP-OUT"] = ["OUT"] * nrows
 
         # Remove any TechDesc column
         if "TechDesc" in df.columns:
@@ -650,7 +662,7 @@ def process_flexible_import_tables(
                 df.loc[i, attribute] = "IO"
         filter = ~((df[attribute] == "IO") & df[other].isna())
         df = df[filter]
-        df.reset_index(drop=True, inplace=True)
+        df = df.reset_index(drop=True)
 
         # Should have all index_columns and VALUE
         if table.tag == Tag.fi_t and len(df.columns) != (len(index_columns) + 1):
@@ -799,7 +811,7 @@ def process_user_constraint_tables(
         # TODO: handle other wildcard columns
 
         # TODO: should we have a global list of column name -> type?
-        df = df.assign(Year=df["Year"].astype("Int64"))
+        df["Year"] = df["Year"].astype("Int64")
 
         return replace(table, dataframe=df)
 
@@ -892,15 +904,16 @@ def expand_rows(table: EmbeddedXlTable) -> EmbeddedXlTable:
         else:
             return s
 
-    if table.tag == Tag.tfm_upd:
-        return table
-
     df = table.dataframe.copy()
     c = df.applymap(has_comma)
-    columns_with_commas = [colname for colname in c.columns.values if c[colname].any()]
+    columns_with_commas = [
+        colname
+        for colname in c.columns.values
+        if colname not in query_columns and c[colname].any()
+    ]
     if len(columns_with_commas) > 0:
         # Transform comma-separated strings into lists
-        df = df.applymap(split_by_commas)
+        df[columns_with_commas] = df[columns_with_commas].applymap(split_by_commas)
         for colname in columns_with_commas:
             # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.explode.html#pandas.DataFrame.explode
             df = df.explode(colname, ignore_index=True)
@@ -1075,7 +1088,7 @@ def process_commodity_emissions(tables: List[EmbeddedXlTable]) -> List[EmbeddedX
             ]
             df, names = explode(df, data_columns)
             df.rename(columns={"VALUE": "EMCB"}, inplace=True)
-            df = df.assign(Other_Indexes=names)
+            df["Other_Indexes"] = names
 
             if "Region" in df.columns.values:
                 df = df.astype({"Region": "string"})
@@ -1158,16 +1171,6 @@ def process_transform_insert(tables: List[EmbeddedXlTable]) -> List[EmbeddedXlTa
             nrows = df.shape[0]
 
             # Standardize column names
-            query_columns = {
-                "PSet_Set",
-                "PSet_PN",
-                "PSet_PD",
-                "PSet_CI",
-                "PSet_CO",
-                "CSet_Set",
-                "CSet_CN",
-                "CSet_CD",
-            }
             known_columns = {
                 "Attribute",
                 "Year",
@@ -1197,7 +1200,7 @@ def process_transform_insert(tables: List[EmbeddedXlTable]) -> List[EmbeddedXlTa
             if table.tag == Tag.tfm_ins_ts:
                 # ~TFM_INS-TS: Regions should be specified in a column with header=Region and columns in data area are YEARS
                 if "Region" not in df.columns.values:
-                    df = df.assign(Region=[regions] * len(df))
+                    df["Region"] = [regions] * len(df)
                     df = df.explode(["Region"], ignore_index=True)
             else:
                 # Transpose region columns to new VALUE column and add corresponding regions in new Region column
@@ -1211,8 +1214,8 @@ def process_transform_insert(tables: List[EmbeddedXlTable]) -> List[EmbeddedXlTa
                 ]
                 data = df[region_cols].values.tolist()
                 df = df[other_columns]
-                df = df.assign(Region=[region_cols] * nrows)
-                df = df.assign(VALUE=data)
+                df["Region"] = [region_cols] * nrows
+                df["VALUE"] = data
                 df = df.explode(["Region", "VALUE"], ignore_index=True)
                 unknown_columns = [
                     col_name
@@ -1258,12 +1261,10 @@ def process_transform_insert(tables: List[EmbeddedXlTable]) -> List[EmbeddedXlTa
                         if colname not in known_columns | {"Region", "TS_Filter"}
                     ]
                     df, years = explode(df, data_columns)
-                    df = df.assign(Year=years)
-                kwargs = {}
+                    df["Year"] = years
                 for standard_col in known_columns:
                     if standard_col not in df.columns:
-                        kwargs[standard_col] = [None] * len(df)
-                df = df.assign(**kwargs)
+                        df[standard_col] = [None] * len(df)
                 result.append(replace(table, dataframe=df))
 
         elif table.tag == Tag.tfm_dins:
@@ -1289,8 +1290,8 @@ def process_transform_insert(tables: List[EmbeddedXlTable]) -> List[EmbeddedXlTa
             ]
             data = df[region_cols].values.tolist()
             df = df[other_columns]
-            df = df.assign(Region=[region_cols] * nrows)
-            df = df.assign(DEMAND=data)
+            df["Region"] = [region_cols] * nrows
+            df["DEMAND"] = data
             df = df.explode(["Region", "DEMAND"], ignore_index=True)
 
             df.rename(columns={"Cset_CN": "Comm-IN"}, inplace=True)
@@ -1392,7 +1393,8 @@ def process_wildcards(tables: Dict[str, DataFrame]) -> Dict[str, DataFrame]:
     commodities_by_sets = commodities[["CommName", "Csets"]].dropna().set_index("Csets")
 
     def filter_by_pattern(df, pattern):
-        df = df.filter(regex=create_regexp(pattern), axis="index")
+        # Duplicates can be created when a process has multiple commodities that match the pattern
+        df = df.filter(regex=create_regexp(pattern), axis="index").drop_duplicates()
         exclude = df.filter(regex=create_negative_regexp(pattern), axis="index").index
         return df.drop(exclude)
 
@@ -1451,6 +1453,12 @@ def process_wildcards(tables: Dict[str, DataFrame]) -> Dict[str, DataFrame]:
         if tag in tables:
             start_time = time.time()
             upd = tables[tag]
+            new_rows = []
+            # reset index to make sure there are no duplicates
+            tables[Tag.fi_t].reset_index(drop=True, inplace=True)
+            if tag == Tag.tfm_upd:
+                # copy old index to new column 'index'
+                tables[Tag.fi_t].reset_index(inplace=True)
             for i in range(0, len(upd)):
                 row = upd.iloc[i]
                 debug = False
@@ -1469,7 +1477,6 @@ def process_wildcards(tables: Dict[str, DataFrame]) -> Dict[str, DataFrame]:
                     raise ValueError("~FI_T table has duplicated indices")
                 if tag == Tag.tfm_upd:
                     # construct query into ~FI_T to get indices of matching rows
-                    df = df.reset_index()
                     if matching_processes is not None:
                         df = df.merge(matching_processes, on="TechName")
                     if debug:
@@ -1498,7 +1505,10 @@ def process_wildcards(tables: Dict[str, DataFrame]) -> Dict[str, DataFrame]:
                         print(f"{len(df)} rows after Region")
                         if any(df["index"].duplicated()):
                             raise ValueError("~FI_T table has duplicated indices")
+                    # so that we can update the original table, copy original index back that was lost when merging
                     df = df.set_index("index")
+                    # for speed, extract just the VALUE column as that is the only one being updated
+                    df = df[["VALUE"]]
                     if debug:
                         if any(df.index.duplicated()):
                             raise ValueError("~FI_T table has duplicated indices")
@@ -1510,7 +1520,7 @@ def process_wildcards(tables: Dict[str, DataFrame]) -> Dict[str, DataFrame]:
                     }:
                         df = df.astype({"VALUE": float}).eval("VALUE=VALUE" + row.VALUE)
                     else:
-                        df = df.assign(VALUE=[row.VALUE] * len(df))
+                        df["VALUE"] = [row.VALUE] * len(df)
                     if len(df) == 0:
                         print(f"WARNING: {tag} row matched nothing")
                     tables[Tag.fi_t].update(df)
@@ -1525,10 +1535,15 @@ def process_wildcards(tables: Dict[str, DataFrame]) -> Dict[str, DataFrame]:
                         matching_commodities.rename(
                             columns={"CommName": "Comm-IN"}, inplace=True
                         )
-                        kwargs = {"Comm-OUT": "Comm-IN"}
-                        matching_commodities = matching_commodities.assign(**kwargs)
+                        matching_commodities["Comm-OUT"] = matching_commodities[
+                            "Comm-IN"
+                        ]
                         row = matching_commodities.merge(row, how="cross")
-                    tables[Tag.fi_t] = pd.concat([df, row], ignore_index=True)
+                    new_rows.append(row)
+
+            if tag != Tag.tfm_upd:
+                new_rows.append(df)
+                tables[Tag.fi_t] = pd.concat(new_rows, ignore_index=True)
         print(
             f"  process_wildcards: {tag} took {time.time()-start_time:.2f} seconds for {len(upd)} rows"
         )
@@ -1628,6 +1643,9 @@ def produce_times_tables(
                     df = df.loc[i, :]
                     if colname not in df.columns:
                         df = df.rename(columns={"VALUE": colname})
+            # TODO find the correct tech group
+            if "TechGroup" in mapping.xl_cols:
+                df["TechGroup"] = df["TechName"]
             if not all(c in df.columns for c in mapping.xl_cols):
                 missing = set(mapping.xl_cols) - set(df.columns)
                 print(
