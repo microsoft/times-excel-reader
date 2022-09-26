@@ -1710,7 +1710,7 @@ def apply_composite_tag(table: EmbeddedXlTable) -> EmbeddedXlTable:
     Handles table level declarations. Declarations can be included in the table
     tag and will apply to all data that doesn't have a different value for that
     index specified. For example, ~FI_T: DEMAND would assign DEMAND as the
-    attribute for all values in the table that don’t have an attribute specification
+    attribute for all values in the table that don't have an attribute specification
     at the column or row level. After applying the declaration this function will
     return the modified table with the simplified table tag (e.g. ~FI_T).
 
