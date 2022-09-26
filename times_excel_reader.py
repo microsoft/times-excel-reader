@@ -921,8 +921,8 @@ def expand_rows(table: EmbeddedXlTable) -> EmbeddedXlTable:
 
 def remove_invalid_values(tables: List[EmbeddedXlTable]) -> List[EmbeddedXlTable]:
     """
-    Remove all entries of any dataframed that are considered invalid. The rules for
-    allowing an entry can be seen in the 'constraint' dictionary below.
+    Remove all entries of any dataframes that are considered invalid. The rules for
+    allowing an entry can be seen in the 'constraints' dictionary below.
 
     :param tables:      List of tables in EmbeddedXlTable format.
     :return:            List of tables in EmbeddedXlTable format with disallowed entries removed.
