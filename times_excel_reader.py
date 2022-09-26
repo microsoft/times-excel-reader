@@ -1986,14 +1986,15 @@ def extract_table(
     filename: str,
 ) -> EmbeddedXlTable:
     """
-    For each individual table tag found in a worksheet, this function aims to extract the associated
-    table. We recognise several types of tables:
-    - Single cell tables:   Tables with only one value, either below or to the right of the table tag.
-                            We interpret these as a single data item with a column name VALUE.
-    - Multiple cell tables: Tables with multiple values, possibly extending accross several rows and
-                            columns. We delimitate them using empty spaces around them and the column
-                            names are determined by the values in the row immediately below the table
-                            tag
+    For each individual table tag found in a worksheet, this function aims to extract
+    the associated table. We recognise several types of tables:
+    - Single cell tables:   Tables with only one value, either below or to the right of
+                            the table tag. We interpret these as a single data item with
+                            a column name VALUE.
+    - Multiple cell tables: Tables with multiple values, possibly extending accross
+                            several rows and columns. We delimitate them using empty
+                            spaces around them and the column names are determined by the
+                            values in the row immediately below the table tag
 
     :param tag_row:         Row number for the tag designating the table to be extracted
     :param tag_col:         Column number for the tag designating the table to be extracted
