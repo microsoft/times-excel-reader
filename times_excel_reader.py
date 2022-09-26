@@ -1824,7 +1824,7 @@ def apply_wildcards(
 
 
 
-    :param df:              Datafram containing all values.
+    :param df:              Dataframe containing all values.
     :param candidates:      List of candidate strings to apply the wildcard to.
     :param wildcard_col:    Name of column containing the wildcards.
     :param output_col:      Name of the column to dump the wildcard matches to.
