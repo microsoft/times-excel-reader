@@ -133,8 +133,10 @@ def read_mappings(filename: str) -> List[TimesXlMap]:
 
     where OUTPUT_TABLE is the name of the table we output and it includes a list of the
     different fields or column names it includes. On the other side, TimePeriods is the type
-    of table that we will use as input to produce that table, and it also includes a list of
-    fields that this input will have.
+    of table that we will use as input to produce that table, and the arguments are the
+    columns of that table to use to produce the output. The last argument can be of the
+    form `Attribute:ATTRNAME` which means the output will be filtered to only the rows of
+    the input table that have `ATTRNAME` in the Attribute column.
 
     The mappings are loaded into TimesXlMap objects. See the description of that class for more
     information of the different fields they contain.
