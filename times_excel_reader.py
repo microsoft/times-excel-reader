@@ -500,7 +500,7 @@ def process_flexible_import_tables(
     tables: List[EmbeddedXlTable],
 ) -> List[EmbeddedXlTable]:
     """
-    Attempt to process all tables in 'tables' as flexible import tables. The processing includes:
+    Attempt to process all flexible import tables in 'tables'. The processing includes:
     - Checking that the table is indeed a flexible import table. If not, return it unmodified.
     - Removing, adding and renaming columns as needed.
     - Populating index columns.
