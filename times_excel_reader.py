@@ -1724,6 +1724,7 @@ def expand_rows_parallel(tables: List[EmbeddedXlTable]) -> List[EmbeddedXlTable]
 # ===============           HELPER FUNCTIONS                 =================
 # ============================================================================
 
+
 def apply_composite_tag(table: EmbeddedXlTable) -> EmbeddedXlTable:
     """
     Handles table level declarations. Declarations can be included in the table
