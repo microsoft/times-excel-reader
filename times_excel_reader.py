@@ -350,7 +350,9 @@ def remove_comment_rows(table: EmbeddedXlTable) -> EmbeddedXlTable:
     or '\I:' in their first or third columns have been deleted. These characters
     are defined in https://iea-etsap.org/docs/Documentation_for_the_TIMES_Model-Part-IV.pdf
     as comment identifiers (pag 15).
-    TODO: is this description correct?
+    TODO: we believe the deletion of the third column is a bug. We tried deleting that part
+    of the code but we failed to parse a row as a consequence. We need to investigate why,
+    fix that parsing and remove the deletion of the third column.
 
     :param table:       Table object in EmbeddedXlTable format.
     :return:            Table object in EmbeddedXlTable format without comment rows.
@@ -369,7 +371,9 @@ def remove_comment_rows(table: EmbeddedXlTable) -> EmbeddedXlTable:
     df.drop(index=comment_rows, inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    # TODO tidy
+    # TODO: the deletion of this third column is a bug. Removing it causes the
+    # program to fail parse all rows. We need to fix the parsing so it can read
+    # all rows and remove this code block.
     if df.shape[1] > 1:
         comment_rows = list(
             locate(
