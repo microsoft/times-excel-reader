@@ -133,8 +133,10 @@ def read_mappings(filename: str) -> List[TimesXlMap]:
 
     where OUTPUT_TABLE is the name of the table we output and it includes a list of the
     different fields or column names it includes. On the other side, TimePeriods is the type
-    of table that we will use as input to produce that table, and it also includes a list of
-    fields that this input will have.
+    of table that we will use as input to produce that table, and the arguments are the
+    columns of that table to use to produce the output. The last argument can be of the
+    form `Attribute:ATTRNAME` which means the output will be filtered to only the rows of
+    the input table that have `ATTRNAME` in the Attribute column.
 
     The mappings are loaded into TimesXlMap objects. See the description of that class for more
     information of the different fields they contain.
@@ -504,7 +506,7 @@ def process_flexible_import_tables(
     tables: List[EmbeddedXlTable],
 ) -> List[EmbeddedXlTable]:
     """
-    Attempt to process all tables in 'tables' as flexible import tables. The processing includes:
+    Attempt to process all flexible import tables in 'tables'. The processing includes:
     - Checking that the table is indeed a flexible import table. If not, return it unmodified.
     - Removing, adding and renaming columns as needed.
     - Populating index columns.
@@ -925,8 +927,8 @@ def expand_rows(table: EmbeddedXlTable) -> EmbeddedXlTable:
 
 def remove_invalid_values(tables: List[EmbeddedXlTable]) -> List[EmbeddedXlTable]:
     """
-    Remove all entries of any dataframed that are considered invalid. The rules for
-    allowing an entry can be seen in the 'constraint' dictionary below.
+    Remove all entries of any dataframes that are considered invalid. The rules for
+    allowing an entry can be seen in the 'constraints' dictionary below.
 
     :param tables:      List of tables in EmbeddedXlTable format.
     :return:            List of tables in EmbeddedXlTable format with disallowed entries removed.
@@ -1714,7 +1716,7 @@ def apply_composite_tag(table: EmbeddedXlTable) -> EmbeddedXlTable:
     Handles table level declarations. Declarations can be included in the table
     tag and will apply to all data that doesn't have a different value for that
     index specified. For example, ~FI_T: DEMAND would assign DEMAND as the
-    attribute for all values in the table that don’t have an attribute specification
+    attribute for all values in the table that don't have an attribute specification
     at the column or row level. After applying the declaration this function will
     return the modified table with the simplified table tag (e.g. ~FI_T).
 
@@ -1828,7 +1830,7 @@ def apply_wildcards(
 
 
 
-    :param df:              Datafram containing all values.
+    :param df:              Dataframe containing all values.
     :param candidates:      List of candidate strings to apply the wildcard to.
     :param wildcard_col:    Name of column containing the wildcards.
     :param output_col:      Name of the column to dump the wildcard matches to.
@@ -1990,14 +1992,15 @@ def extract_table(
     filename: str,
 ) -> EmbeddedXlTable:
     """
-    For each individual table tag found in a worksheet, this function aims to extract the associated
-    table. We recognise several types of tables:
-    - Single cell tables:   Tables with only one value, either below or to the right of the table tag.
-                            We interpret these as a single data item with a column name VALUE.
-    - Multiple cell tables: Tables with multiple values, possibly extending accross several rows and
-                            columns. We delimitate them using empty spaces around them and the column
-                            names are determined by the values in the row immediately below the table
-                            tag
+    For each individual table tag found in a worksheet, this function aims to extract
+    the associated table. We recognise several types of tables:
+    - Single cell tables:   Tables with only one value, either below or to the right of
+                            the table tag. We interpret these as a single data item with
+                            a column name VALUE.
+    - Multiple cell tables: Tables with multiple values, possibly extending accross
+                            several rows and columns. We delimitate them using empty
+                            spaces around them and the column names are determined by the
+                            values in the row immediately below the table tag
 
     :param tag_row:         Row number for the tag designating the table to be extracted
     :param tag_col:         Column number for the tag designating the table to be extracted
