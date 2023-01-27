@@ -1,11 +1,11 @@
 from openpyxl import load_workbook
 from openpyxl.worksheet.cell_range import CellRange
 import time
-from math import log10, floor
 import pandas as pd
 import numpy
 import re
 from .datatypes import *
+from .utils import *
 
 
 def extract_tables(filename: str) -> List[EmbeddedXlTable]:
@@ -174,9 +174,3 @@ def cell_is_empty(value) -> bool:
         or (isinstance(value, numpy.float64) and numpy.isnan(value))
         or (isinstance(value, str) and len(value.strip()) == 0)
     )
-
-
-def round_sig(x, sig_figs):
-    if x == 0.0:
-        return 0.0
-    return round(x, -int(floor(log10(abs(x)))) + sig_figs - 1)

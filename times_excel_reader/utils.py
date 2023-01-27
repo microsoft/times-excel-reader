@@ -8,9 +8,8 @@ import numpy
 import re
 import os
 from concurrent.futures import ProcessPoolExecutor
-import time
 from functools import reduce
-import pickle
+from math import log10, floor
 from .datatypes import *
 
 
@@ -222,3 +221,9 @@ def create_negative_regexp(pattern):
     if len(pattern) == 0:
         pattern = "^$"  # matches nothing
     return create_regexp(pattern)
+
+
+def round_sig(x, sig_figs):
+    if x == 0.0:
+        return 0.0
+    return round(x, -int(floor(log10(abs(x)))) + sig_figs - 1)
