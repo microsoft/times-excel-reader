@@ -2,21 +2,19 @@ from pandas.core.frame import DataFrame
 import pandas as pd
 from dataclasses import replace
 from typing import Dict, List
-from more_itertools import locate, one
 from itertools import groupby
-import numpy
 import re
 import os
 from concurrent.futures import ProcessPoolExecutor
 import time
 from functools import reduce
 import pickle
-from .datatypes import *
-from .excel import *
-from .transforms import *
+from . import datatypes
+from . import excel
+from . import transforms
 
 
-def read_mappings(filename: str) -> List[TimesXlMap]:
+def read_mappings(filename: str) -> List[datatypes.TimesXlMap]:
     """
     Function to load mappings from a text file between the excel sheets we use as input and
     the tables we give as output. The mappings have the following structure:
@@ -58,8 +56,8 @@ def read_mappings(filename: str) -> List[TimesXlMap]:
             # Uppercase and validate tags:
             if xl_name.startswith("~"):
                 xl_name = xl_name.upper()
-                assert Tag.has_tag(xl_name), f"Tag {xl_name} not found"
-            entry = TimesXlMap(
+                assert datatypes.Tag.has_tag(xl_name), f"Tag {xl_name} not found"
+            entry = datatypes.TimesXlMap(
                 times_name=times_name,
                 times_cols=times_cols,
                 xl_name=xl_name,
@@ -69,7 +67,7 @@ def read_mappings(filename: str) -> List[TimesXlMap]:
             )
 
             # TODO remove: Filter out mappings that are not yet finished
-            if entry.xl_name != Tag.todo and not any(
+            if entry.xl_name != datatypes.Tag.todo and not any(
                 c.startswith("TODO") for c in entry.xl_cols
             ):
                 mappings.append(entry)
@@ -82,7 +80,10 @@ def read_mappings(filename: str) -> List[TimesXlMap]:
 
 
 def convert_xl_to_times(
-    dir: str, input_files: List[str], mappings: List[TimesXlMap], use_pkl: bool
+    dir: str,
+    input_files: List[str],
+    mappings: List[datatypes.TimesXlMap],
+    use_pkl: bool,
 ) -> Dict[str, DataFrame]:
     pickle_file = "raw_tables.pkl"
     if use_pkl and os.path.isfile(pickle_file):
@@ -95,11 +96,11 @@ def convert_xl_to_times(
         use_pool = True
         if use_pool:
             with ProcessPoolExecutor() as executor:
-                for result in executor.map(extract_tables, filenames):
+                for result in executor.map(excel.extract_tables, filenames):
                     raw_tables.extend(result)
         else:
             for f in filenames:
-                result = extract_tables(f)
+                result = excel.extract_tables(f)
                 raw_tables.extend(result)
         pickle.dump(raw_tables, open(pickle_file, "wb"))
 
@@ -108,31 +109,31 @@ def convert_xl_to_times(
         f" {sum(table.dataframe.shape[0] for table in raw_tables)} rows"
     )
 
-    transforms = [
+    transform_list = [
         lambda tables: dump_tables(tables, "raw_tables.txt"),
-        normalize_tags_columns_attrs,
-        remove_fill_tables,
-        lambda tables: [remove_comment_rows(t) for t in tables],
-        lambda tables: [remove_comment_cols(t) for t in tables],
-        remove_tables_with_formulas,  # slow
-        process_transform_insert,
-        process_flexible_import_tables,  # slow
-        process_user_constraint_tables,
-        process_commodity_emissions,
-        process_commodities,
-        process_processes,
-        process_transform_availability,
-        fill_in_missing_values,
-        process_time_slices,
+        transforms.normalize_tags_columns_attrs,
+        transforms.remove_fill_tables,
+        lambda tables: [transforms.remove_comment_rows(t) for t in tables],
+        lambda tables: [transforms.remove_comment_cols(t) for t in tables],
+        transforms.remove_tables_with_formulas,  # slow
+        transforms.process_transform_insert,
+        transforms.process_flexible_import_tables,  # slow
+        transforms.process_user_constraint_tables,
+        transforms.process_commodity_emissions,
+        transforms.process_commodities,
+        transforms.process_processes,
+        transforms.process_transform_availability,
+        transforms.fill_in_missing_values,
+        transforms.process_time_slices,
         expand_rows_parallel,  # slow
-        remove_invalid_values,
-        process_time_periods,
-        process_currencies,
-        apply_fixups,
-        extract_commodity_groups,
-        merge_tables,
-        process_years,
-        process_wildcards,
+        transforms.remove_invalid_values,
+        transforms.process_time_periods,
+        transforms.process_currencies,
+        transforms.apply_fixups,
+        transforms.extract_commodity_groups,
+        transforms.merge_tables,
+        transforms.process_years,
+        transforms.process_wildcards,
         convert_to_string,
         lambda tables: dump_tables(tables, "merged_tables.txt"),
         lambda tables: produce_times_tables(tables, mappings),
@@ -140,7 +141,7 @@ def convert_xl_to_times(
 
     results = []
     input = raw_tables
-    for transform in transforms:
+    for transform in transform_list:
         start_time = time.time()
         output = transform(input)
         end_time = time.time()
@@ -243,7 +244,7 @@ def convert_to_string(input: Dict[str, DataFrame]) -> Dict[str, DataFrame]:
 
 
 def produce_times_tables(
-    input: Dict[str, DataFrame], mappings: List[TimesXlMap]
+    input: Dict[str, DataFrame], mappings: List[datatypes.TimesXlMap]
 ) -> Dict[str, DataFrame]:
     print(
         f"produce_times_tables: {len(input)} tables incoming,"
@@ -307,7 +308,7 @@ def dump_tables(tables: List, filename: str) -> List:
     os.makedirs("output", exist_ok=True)
     with open(rf"output/{filename}", "w") as text_file:
         for t in tables if isinstance(tables, List) else tables.items():
-            if isinstance(t, EmbeddedXlTable):
+            if isinstance(t, datatypes.EmbeddedXlTable):
                 tag = t.tag
                 text_file.write(f"sheetname: {t.sheetname}\n")
                 text_file.write(f"range: {t.range}\n")
@@ -327,9 +328,11 @@ def dump_tables(tables: List, filename: str) -> List:
     return tables
 
 
-def expand_rows_parallel(tables: List[EmbeddedXlTable]) -> List[EmbeddedXlTable]:
+def expand_rows_parallel(
+    tables: List[datatypes.EmbeddedXlTable],
+) -> List[datatypes.EmbeddedXlTable]:
     with ProcessPoolExecutor() as executor:
-        return list(executor.map(expand_rows, tables))
+        return list(executor.map(transforms.expand_rows, tables))
 
 
 def write_csv_tables(tables: Dict[str, DataFrame], output_dir: str):

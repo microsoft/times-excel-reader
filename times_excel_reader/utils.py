@@ -10,10 +10,10 @@ import os
 from concurrent.futures import ProcessPoolExecutor
 from functools import reduce
 from math import log10, floor
-from .datatypes import *
+from . import datatypes
 
 
-def apply_composite_tag(table: EmbeddedXlTable) -> EmbeddedXlTable:
+def apply_composite_tag(table: datatypes.EmbeddedXlTable) -> datatypes.EmbeddedXlTable:
     """
     Handles table level declarations. Declarations can be included in the table
     tag and will apply to all data that doesn't have a different value for that
@@ -67,7 +67,7 @@ def explode(df, data_columns):
     return df, names
 
 
-def timeslices(tables: List[EmbeddedXlTable]):
+def timeslices(tables: List[datatypes.EmbeddedXlTable]):
     """
     Given a list of tables with a unique table with a time slice tag, return a list
     with all the column names of that table + "ANNUAL".
@@ -78,13 +78,13 @@ def timeslices(tables: List[EmbeddedXlTable]):
     # TODO merge with other timeslice code
 
     # No idea why casing of Weekly is special
-    cols = single_table(tables, Tag.time_slices).dataframe.columns
+    cols = single_table(tables, datatypes.Tag.time_slices).dataframe.columns
     timeslices = [col if col == "Weekly" else col.upper() for col in cols]
     timeslices.insert(0, "ANNUAL")
     return timeslices
 
 
-def single_table(tables: List[EmbeddedXlTable], tag: str):
+def single_table(tables: List[datatypes.EmbeddedXlTable], tag: str):
     """
     Make sure exactly one table in 'tables' has the given table tag, and return it.
     If there are none or more than one raise an error.
@@ -96,7 +96,7 @@ def single_table(tables: List[EmbeddedXlTable], tag: str):
     return one(table for table in tables if table.tag == tag)
 
 
-def single_column(tables: List[EmbeddedXlTable], tag: str, colname: str):
+def single_column(tables: List[datatypes.EmbeddedXlTable], tag: str, colname: str):
     """
     Make sure exactly one table in 'tables' has the given table tag, and return the
     values for the given column name. If there are none or more than one raise an error.
@@ -109,7 +109,7 @@ def single_column(tables: List[EmbeddedXlTable], tag: str, colname: str):
     return single_table(tables, tag).dataframe[colname].values
 
 
-def merge_columns(tables: List[EmbeddedXlTable], tag: str, colname: str):
+def merge_columns(tables: List[datatypes.EmbeddedXlTable], tag: str, colname: str):
     """
     Return a list with all the values belonging to a column 'colname' from
     a table with the given tag.
@@ -179,7 +179,7 @@ def missing_value_inherit(df: DataFrame, colname: str):
             last = value
 
 
-def get_scalar(table_tag: str, tables: List[EmbeddedXlTable]):
+def get_scalar(table_tag: str, tables: List[datatypes.EmbeddedXlTable]):
     table = next(filter(lambda t: t.tag == table_tag, tables))
     if table.dataframe.shape[0] != 1 or table.dataframe.shape[1] != 1:
         raise ValueError("Not scalar table")

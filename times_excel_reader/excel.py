@@ -1,14 +1,16 @@
 from openpyxl import load_workbook
 from openpyxl.worksheet.cell_range import CellRange
+from typing import Dict, List
 import time
+from pandas.core.frame import DataFrame
 import pandas as pd
 import numpy
 import re
-from .datatypes import *
-from .utils import *
+from . import datatypes
+from . import utils
 
 
-def extract_tables(filename: str) -> List[EmbeddedXlTable]:
+def extract_tables(filename: str) -> List[datatypes.EmbeddedXlTable]:
     """
     This function calls the extract_table function on each individual table in each worksheet of the
     given excel file.
@@ -31,7 +33,9 @@ def extract_tables(filename: str) -> List[EmbeddedXlTable]:
             for colname in df.columns:
                 value = str(row[colname])
                 if value.startswith("~"):
-                    match = re.match(f"~{Tag.uc_sets}:(.*)", value, re.IGNORECASE)
+                    match = re.match(
+                        f"~{datatypes.Tag.uc_sets}:(.*)", value, re.IGNORECASE
+                    )
                     if match:
                         parts = match.group(1).split(":")
                         if len(parts) == 2:
@@ -62,7 +66,7 @@ def extract_table(
     df: DataFrame,
     sheetname: str,
     filename: str,
-) -> EmbeddedXlTable:
+) -> datatypes.EmbeddedXlTable:
     """
     For each individual table tag found in a worksheet, this function aims to extract
     the associated table. We recognise several types of tables:
@@ -133,10 +137,10 @@ def extract_table(
 
     table_df.reset_index(drop=True, inplace=True)
     table_df = table_df.applymap(
-        lambda cell: cell if not isinstance(cell, float) else round_sig(cell, 15)
+        lambda cell: cell if not isinstance(cell, float) else utils.round_sig(cell, 15)
     )
 
-    return EmbeddedXlTable(
+    return datatypes.EmbeddedXlTable(
         filename=filename,
         sheetname=sheetname,
         range=range,
