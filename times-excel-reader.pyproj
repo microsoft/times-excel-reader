@@ -27,19 +27,27 @@
     <Content Include="requirements.txt" />
     <Content Include="TextFile1.txt" />
     <Content Include="times_mapping.txt" />
+    <Content Include="times_reader\__pycache__\datatypes.cpython-38.pyc" />
+    <Content Include="times_reader\__pycache__\excel.cpython-38.pyc" />
+    <Content Include="times_reader\__pycache__\main.cpython-38.pyc" />
+    <Content Include="times_reader\__pycache__\transforms.cpython-38.pyc" />
+    <Content Include="times_reader\__pycache__\transform_utils.cpython-38.pyc" />
+    <Content Include="times_reader\__pycache__\utils.cpython-38.pyc" />
+    <Content Include="times_reader\__pycache__\__init__.cpython-38.pyc" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="times_excel_reader.py" />
-    <Compile Include="times_excel_reader\datatypes.py" />
-    <Compile Include="times_excel_reader\excel.py" />
-    <Compile Include="times_excel_reader\utils.py" />
-    <Compile Include="times_excel_reader\transforms.py" />
-    <Compile Include="times_excel_reader\__init__.py" />
-    <Compile Include="times_excel_reader\main.py" />
+    <Compile Include="times_reader\datatypes.py" />
+    <Compile Include="times_reader\excel.py" />
+    <Compile Include="times_reader\main.py" />
+    <Compile Include="times_reader\transforms.py" />
+    <Compile Include="times_reader\utils.py" />
+    <Compile Include="times_reader\__init__.py" />
     <Compile Include="utils\dd_to_csv.py" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="times_excel_reader\" />
+    <Folder Include="times_reader\" />
+    <Folder Include="times_reader\__pycache__\" />
     <Folder Include="utils" />
   </ItemGroup>
   <ItemGroup>
